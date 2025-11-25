@@ -1,3 +1,14 @@
+# Forked from https://github.com/neistow/battlesnake-starter-csharp/tree/master/Starter.Api
+
+This starter has been upgraded to .NET 9.
+
+Likely the easiest way to get started is to publish a container build of the project and host it
+in your private project in a Cloud Run application.
+
+The original README.md is included here below for reference.
+
+# README.md
+
 # [Battlesnake](https://play.battlesnake.com) C# Starter
 
 This is a basic implementation of the Battlesnake API. It's a great starting point for anyone wanting to program their first Battlesnake using C#. 
