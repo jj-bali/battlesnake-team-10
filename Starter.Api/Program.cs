@@ -65,7 +65,6 @@ app.MapPost("/move", (GameStatusRequest request, GridBuilder gridBuilder, AStarP
             grid,
             request.Board.Width,
             request.Board.Height);
-        Console.WriteLine("The size of the path is: ", path.Count);
 
         if (path != null && path.Count > 1)
         {

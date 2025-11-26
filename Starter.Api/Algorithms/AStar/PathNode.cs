@@ -34,7 +34,7 @@ public class PathNode
     public PathNode(Coordinate position)
     {
         Position = position;
-        GCost = 0;
+        GCost = int.MaxValue; // Initialize to max value to indicate unvisited
         HCost = 0;
         Parent = null;
     }
