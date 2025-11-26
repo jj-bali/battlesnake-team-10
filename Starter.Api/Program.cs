@@ -15,8 +15,8 @@ app.MapGet("/", () =>
     return new InitResponse
     {
         ApiVersion = "1",
-        Author = "",
-        Color = "#00FF00",
+        Author = "Team 10",
+        Color = "#8B00FF",
         Head = "nr-rocket",
         Tail = "nr-booster"
     };
