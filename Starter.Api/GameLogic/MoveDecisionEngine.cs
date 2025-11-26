@@ -15,7 +15,7 @@ public class MoveDecisionEngine
             return allMoves[Random.Shared.Next(allMoves.Count)];
         }
 
-        // Step 2: Critical health check - prioritize food when health < 50
+        // Step 2: Critical health check - prioritize food when health < 5
         if (FoodTargeting.ShouldSeekFood(you))
         {
             var foodMove = FoodTargeting.GetMoveTowardsFood(board, you, allSnakes, safeMoves);
@@ -37,15 +37,7 @@ public class MoveDecisionEngine
             }
         }
 
-        // Step 4: Default - seek food to maintain health
-        var defaultFoodMove = FoodTargeting.GetMoveTowardsFood(board, you, allSnakes, safeMoves);
-        if (defaultFoodMove != null)
-        {
-            Console.WriteLine($"Seeking food to maintain health: {defaultFoodMove}");
-            return defaultFoodMove;
-        }
-
-        // Step 5: If no targets, prefer moves that maximize space (flood fill heuristic)
+        // Step 4: If no targets, prefer moves that maximize space (flood fill heuristic)
         var bestMove = GetMoveWithMostSpace(board, you, allSnakes, safeMoves);
         Console.WriteLine($"No targets found, maximizing space: {bestMove}");
         return bestMove;
