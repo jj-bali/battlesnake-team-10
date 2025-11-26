@@ -50,6 +50,7 @@ public class FoodTargeting
 
         if (nearestFood == null)
         {
+            Console.WriteLine("The nearestFood is null");
             return null;
         }
 
@@ -58,6 +59,7 @@ public class FoodTargeting
 
         if (path == null || path.Count < 2)
         {
+            Console.WriteLine("A* could not find a path!");
             return null;
         }
 
@@ -66,6 +68,7 @@ public class FoodTargeting
         var direction = MoveValidator.GetDirectionFromCoordinates(you.Head, nextPosition);
 
         // Only return if it's a safe move
+        Console.WriteLine("Will return a Safe Move");
         return safeMoves.Contains(direction) ? direction : null;
     }
 
