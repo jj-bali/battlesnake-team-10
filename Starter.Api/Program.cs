@@ -1,7 +1,14 @@
+using Starter.Api;
+using Starter.Api.Algorithms.AStar;
 using Starter.Api.Requests;
 using Starter.Api.Responses;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Register A* pathfinding services
+builder.Services.AddSingleton<GridBuilder>();
+builder.Services.AddSingleton<AStarPathfinder>();
+
 var app = builder.Build();
 app.UseHttpsRedirection();
 
@@ -36,16 +43,75 @@ app.MapPost("/start", (GameStatusRequest gameStatusRequest) =>
 /// Use the information provided to determine how your
 /// Battlesnake will move on that turn, either up, down, left, or right.
 /// </summary>
-app.MapPost("/move", (GameStatusRequest gameStatusRequest) =>
+app.MapPost("/move", (GameStatusRequest request, GridBuilder gridBuilder, AStarPathfinder pathfinder) =>
 {
-    var direction = new List<string> { "down", "left", "right", "up" };
+    // Build walkability grid from current board state
+    var grid = gridBuilder.BuildWalkableGrid(request.Board, request.You);
+
+    // Default to a random safe move
+    string move = "up";
+
+    // Find path to nearest food
+    var nearestFood = request.Board.Food
+        .OrderBy(f => request.You.Head.ManhattanDistanceTo(f))
+        .FirstOrDefault();
+
+    if (nearestFood != null)
+    {
+        var path = pathfinder.FindPath(
+            request.You.Head,
+            nearestFood,
+            grid,
+            request.Board.Width,
+            request.Board.Height);
+
+        if (path != null && path.Count > 1)
+        {
+            // path[0] is current position, path[1] is next step
+            move = DirectionHelper.GetDirection(path[0], path[1]);
+        }
+        else
+        {
+            // No path to food, try to find any safe move
+            var safeMove = FindAnySafeMove(request.You.Head, grid, request.Board);
+            if (safeMove != null)
+                move = safeMove;
+        }
+    }
+    else
+    {
+        // No food available, find any safe move
+        var safeMove = FindAnySafeMove(request.You.Head, grid, request.Board);
+        if (safeMove != null)
+            move = safeMove;
+    }
 
     return new MoveResponse
     {
-        Move = direction[Random.Shared.Next(direction.Count)],
-        Shout = "I am moving!"
+        Move = move,
+        Shout = "A* pathfinding!"
     };
 });
+
+// Helper function to find any safe move
+static string? FindAnySafeMove(Coordinate head, bool[,] grid, Board board)
+{
+    var directions = new[] { "up", "down", "left", "right" };
+
+    foreach (var dir in directions)
+    {
+        var nextPos = DirectionHelper.GetCoordinateInDirection(head, dir);
+
+        if (nextPos.X >= 0 && nextPos.X < board.Width &&
+            nextPos.Y >= 0 && nextPos.Y < board.Height &&
+            grid[nextPos.Y, nextPos.X])
+        {
+            return dir;
+        }
+    }
+
+    return null; // No safe moves available
+}
 
 /// <summary>
 /// Your Battlesnake will receive this request whenever a game it was playing has ended.
