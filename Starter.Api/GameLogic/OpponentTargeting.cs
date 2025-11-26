@@ -66,8 +66,8 @@ public class OpponentTargeting
 
     public static bool ShouldTargetOpponents(Snake you, IEnumerable<Snake> allSnakes)
     {
-        // Only be aggressive if we're healthy (not critically low) and there are smaller snakes
-        return you.Health >= 5 && allSnakes.Any(s => s.Id != you.Id && s.Length < you.Length);
+        // Only be aggressive if we're healthy (above 50 health) and there are smaller snakes
+        return you.Health >= 50 && allSnakes.Any(s => s.Id != you.Id && s.Length < you.Length);
     }
 
     private static int ManhattanDistance(Coordinate a, Coordinate b)

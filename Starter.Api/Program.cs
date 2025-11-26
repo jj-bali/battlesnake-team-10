@@ -46,7 +46,7 @@ app.MapPost("/move", (GameStatusRequest gameStatusRequest) =>
         gameStatusRequest.Board.Snakes
     );
 
-    var shout = gameStatusRequest.You.Health < 5
+    var shout = gameStatusRequest.You.Health < 50
         ? "Hungry!"
         : "Dominating!";
 

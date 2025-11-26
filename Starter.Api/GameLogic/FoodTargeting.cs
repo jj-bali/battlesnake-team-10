@@ -38,10 +38,31 @@ public class FoodTargeting
         return nearestFood;
     }
 
-    public static bool ShouldSeekFood(Snake you)
+    public static bool ShouldSeekFood(Board board, Snake you, IEnumerable<Snake> allSnakes)
     {
-        // Prioritize food when health is critically low
-        return you.Health < 5;
+        // Critical: Always seek food when health is low
+        if (you.Health < 50)
+        {
+            return true;
+        }
+
+        // Check size strategy
+        var sizeStrategy = SizeOptimizer.GetSizeStrategy(board, you, allSnakes);
+
+        // If we're too big, avoid food unless health demands it
+        if (sizeStrategy.Mode == GrowthMode.Avoid)
+        {
+            return false; // Skip food to maintain mobility
+        }
+
+        // If we're smaller than optimal or need to grow, seek food
+        if (sizeStrategy.Mode == GrowthMode.Aggressive || sizeStrategy.Mode == GrowthMode.Moderate)
+        {
+            return true;
+        }
+
+        // Maintain mode: Only seek food when health gets somewhat low
+        return you.Health < 70;
     }
 
     public static string? GetMoveTowardsFood(
@@ -156,8 +177,8 @@ public class FoodTargeting
             }
         }
 
-        // Critical: If health is very low (< 5), we MUST eat even if risky
-        if (you.Health < 5)
+        // Critical: If health is very low (< 30), we MUST eat even if somewhat risky
+        if (you.Health < 30)
         {
             // At least need ONE safe move to survive
             return safeMovesCount > 0;

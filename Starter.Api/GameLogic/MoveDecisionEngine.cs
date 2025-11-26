@@ -15,24 +15,27 @@ public class MoveDecisionEngine
             return allMoves[Random.Shared.Next(allMoves.Count)];
         }
 
-        // Step 2: Filter out moves that lead to dead ends (trap avoidance)
+        // Step 2: Calculate size strategy (used throughout decision making)
+        var sizeStrategy = SizeOptimizer.GetSizeStrategy(board, you, allSnakes);
+
+        // Step 3: Filter out moves that lead to dead ends (trap avoidance)
         var spaciousMoves = FilterMovesWithMinimumSpace(board, you, allSnakes, safeMoves);
 
         // If all moves lead to traps, we have to pick the least bad option
         var movesToConsider = spaciousMoves.Count > 0 ? spaciousMoves : safeMoves;
 
-        // Step 3: Critical health check - prioritize food when health < 5
-        if (FoodTargeting.ShouldSeekFood(you))
+        // Step 4: Check if we should seek food (considers health AND optimal size)
+        if (FoodTargeting.ShouldSeekFood(board, you, allSnakes))
         {
             var foodMove = FoodTargeting.GetMoveTowardsFood(board, you, allSnakes, movesToConsider);
             if (foodMove != null)
             {
-                Console.WriteLine($"Health critical ({you.Health}), seeking food: {foodMove}");
+                Console.WriteLine($"Seeking food: Health={you.Health}, Size={you.Length}/{sizeStrategy.OptimalSize}, Mode={sizeStrategy.Mode}");
                 return foodMove;
             }
         }
 
-        // Step 4: If healthy, consider targeting smaller opponents
+        // Step 5: If healthy, consider targeting smaller opponents
         if (OpponentTargeting.ShouldTargetOpponents(you, allSnakes))
         {
             var opponentMove = OpponentTargeting.GetMoveTowardsOpponent(board, you, allSnakes, movesToConsider);
@@ -43,15 +46,18 @@ public class MoveDecisionEngine
             }
         }
 
-        // Step 5: Default - seek food to maintain health
-        var defaultFoodMove = FoodTargeting.GetMoveTowardsFood(board, you, allSnakes, movesToConsider);
-        if (defaultFoodMove != null)
+        // Step 6: Default - seek food to maintain health (if size allows)
+        if (sizeStrategy.Mode != GrowthMode.Avoid)
         {
-            Console.WriteLine($"Seeking food to maintain health: {defaultFoodMove}");
-            return defaultFoodMove;
+            var defaultFoodMove = FoodTargeting.GetMoveTowardsFood(board, you, allSnakes, movesToConsider);
+            if (defaultFoodMove != null)
+            {
+                Console.WriteLine($"Seeking food to maintain health: {defaultFoodMove}");
+                return defaultFoodMove;
+            }
         }
 
-        // Step 6: If no targets, prefer moves that maximize space (flood fill heuristic)
+        // Step 7: If no targets, prefer moves that maximize space (flood fill heuristic)
         var bestMove = GetMoveWithMostSpace(board, you, allSnakes, movesToConsider);
         Console.WriteLine($"No targets found, maximizing space: {bestMove}");
         return bestMove;

@@ -206,4 +206,147 @@ Food at corner:
 
 ---
 
+## Request 10: Correct Health Threshold Understanding
+**User Request:** Health is not measured by snake length. All snakes start at 100 health and lose 1 point per turn. Change threshold from < 5 to < 50.
+
+**Clarification of Health System:**
+- Health starts at 100 for all snakes
+- Health decreases by 1 each turn (not related to length)
+- Eating food restores health to 100
+- Snake dies when health reaches 0
+
+**Previous (INCORRECT) Understanding:**
+- Thought health < 5 was critical
+- This would only trigger with 4 turns left to live!
+
+**Actions Taken:**
+
+1. **FoodTargeting.cs:45** - `ShouldSeekFood()`
+   - Changed from `you.Health < 5` to `you.Health < 50`
+   - Now seeks food when below half health (50 turns remaining)
+
+2. **FoodTargeting.cs:161** - `IsFoodSafeToEat()`
+   - Changed from `you.Health < 5` to `you.Health < 30`
+   - Desperate mode: Accept risky food below 30 health
+   - Conservative mode: Require safe food above 30 health
+
+3. **Program.cs:49** - Shout message threshold
+   - Changed from `you.Health < 5` to `you.Health < 50`
+   - Shouts "Hungry!" when health drops below 50
+
+4. **OpponentTargeting.cs:70** - `ShouldTargetOpponents()`
+   - Changed from `you.Health >= 5` to `you.Health >= 50`
+   - Only hunts opponents when healthy (50+ health)
+
+**New Health-Based Behavior:**
+
+| Health Range | Behavior |
+|--------------|----------|
+| **100-50** | Healthy - Hunt opponents, be aggressive |
+| **50-30** | Getting hungry - Seek food, more conservative |
+| **30-0** | Desperate - Take risky food if needed |
+
+**Result:** ✅ Build successful - Correct health thresholds now in use
+
+---
+
+## Request 11: Optimal Size Strategy
+**User Request:** Snake size is double-edged sword - increases trap risk and limits movement. Optimize food hunt strategy based on snake size. Calculate optimal size for grid and opponents. Skip food once certain size is reached.
+
+**Strategic Insight:**
+- Bigger snake = More powerful BUT harder to maneuver
+- Board size limits how big we can safely be
+- Need to balance dominance vs mobility
+
+**Implementation:**
+
+### 1. Created `SizeOptimizer.cs` - Optimal Size Calculator
+
+**Algorithm Components:**
+
+**A. Board Size Factor (40% weight):**
+- Base calculation: `sqrt(board area)`
+- Example: 11x11 grid (121 cells) → optimal ≈ 11
+
+**B. Opponent Size Factor (60% weight):**
+- Largest opponent + 2 buffer (30%): Stay dominant
+- Average opponent size (30%): Competitive positioning
+- Opponent count penalty: -2 per opponent (less space available)
+
+**C. Constraints:**
+- Minimum: `max(largest opponent, 5)`
+- Maximum: `60% of board size` (maintain mobility)
+
+**Formula:**
+```
+optimal = (sqrt(grid_area) * 0.4) +
+          ((largest_opponent + 2) * 0.3) +
+          (avg_opponent * 0.3) -
+          (opponent_count * 2)
+
+final = clamp(optimal, min_size, max_size)
+```
+
+**Example Calculations:**
+
+| Board | Opponents | Optimal Size |
+|-------|-----------|--------------|
+| 11x11 | None | ~7 |
+| 11x11 | 1 snake (size 5) | ~9 |
+| 11x11 | 3 snakes (avg 6) | ~8 |
+| 7x7 | 2 snakes (avg 4) | ~5 |
+
+### 2. Growth Modes
+
+**Aggressive Mode:**
+- Trigger: Smaller than largest opponent
+- Behavior: MUST grow - actively seek food
+- Priority: Survival through dominance
+
+**Moderate Mode:**
+- Trigger: Below optimal size
+- Behavior: Seek food when safe
+- Priority: Reach competitive size
+
+**Maintain Mode:**
+- Trigger: At optimal size (±2 buffer)
+- Behavior: Only eat when health < 70
+- Priority: Balance health and mobility
+
+**Avoid Mode:**
+- Trigger: Above optimal size
+- Behavior: Skip food unless health < 50
+- Priority: Maximize mobility, avoid traps
+
+### 3. Updated Food Targeting Logic
+
+**FoodTargeting.ShouldSeekFood()** now considers:
+1. **Critical health (< 50):** Always seek food
+2. **Size mode == Avoid:** Skip food (too big)
+3. **Size mode == Aggressive/Moderate:** Seek food
+4. **Size mode == Maintain:** Only if health < 70
+
+### 4. Decision Engine Integration
+
+- Calculates size strategy at start of each turn
+- Logs: `Health={health}, Size={current}/{optimal}, Mode={mode}`
+- Both Step 4 (priority food) and Step 6 (default food) check size strategy
+- If mode == Avoid, skip food seeking entirely
+
+**Files Modified:**
+- ✅ Created `GameLogic/SizeOptimizer.cs` (new file)
+- ✅ Updated `GameLogic/FoodTargeting.cs` - Size-aware food seeking
+- ✅ Updated `GameLogic/MoveDecisionEngine.cs` - Integrated size strategy
+
+**Key Benefits:**
+- ✅ Prevents snake from becoming too large for the board
+- ✅ Maintains competitive advantage over opponents
+- ✅ Balances power (size) vs agility (mobility)
+- ✅ Adapts strategy as opponents are eliminated
+- ✅ Reduces trap risk for large snakes
+
+**Result:** ✅ Build successful - Snake now has intelligent size management
+
+---
+
 ## End of Session Log
