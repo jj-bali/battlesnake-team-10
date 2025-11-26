@@ -55,6 +55,7 @@ app.MapPost("/move", (GameStatusRequest request, GridBuilder gridBuilder, AStarP
     var nearestFood = request.Board.Food
         .OrderBy(f => request.You.Head.ManhattanDistanceTo(f))
         .FirstOrDefault();
+    Console.WriteLine("The current food board is: ", request.Board.Food);
     Console.WriteLine("The nearest food is: ", nearestFood);
     if (nearestFood != null)
     {
