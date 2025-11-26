@@ -37,6 +37,9 @@ public class FoodTargeting
     public static bool ShouldSeekFood(Snake you)
     {
         // Prioritize food when health is critically low
+        var res = you.Health < 5;
+        Console.WriteLine($"Health is critically low: {res}");
+        Console.WriteLine($"Current health is: {you.Health}");
         return you.Health < 5;
     }
 
