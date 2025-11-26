@@ -1,5 +1,6 @@
 using Starter.Api.Requests;
 using Starter.Api.Responses;
+using Starter.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -39,12 +40,28 @@ app.MapPost("/start", (GameStatusRequest gameStatusRequest) =>
 app.MapPost("/move", (GameStatusRequest gameStatusRequest) =>
 {
     var direction = new List<string> { "down", "left", "right", "up" };
+    
+    var move = new Move(gameStatusRequest.You);
+    var invalidMoves = move.EatMyself();
+    var validMoves = direction.Where(d => !invalidMoves.Contains(d)).ToList();
 
-    return new MoveResponse
+    if (validMoves.Count > 0)
     {
-        Move = direction[Random.Shared.Next(direction.Count)],
-        Shout = "I am moving!"
-    };
+        return new MoveResponse
+        {
+            Move = validMoves[Random.Shared.Next(validMoves.Count)],
+            Shout = "I am moving!"
+        };
+    }
+    else
+    {
+        // Fallback: no valid moves available, pick any direction
+        return new MoveResponse
+        {
+            Move = direction[Random.Shared.Next(direction.Count)],
+            Shout = "I am moving!"
+        };
+    }
 });
 
 /// <summary>
