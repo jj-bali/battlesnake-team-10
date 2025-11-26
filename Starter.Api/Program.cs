@@ -15,10 +15,10 @@ app.MapGet("/", () =>
     return new InitResponse
     {
         ApiVersion = "1",
-        Author = "Team 10",
+        Author = "",
         Color = "#00FF00",
-        Head = "default",
-        Tail = "default"
+        Head = "nr-rocket",
+        Tail = "nr-booster"
     };
 });
 
