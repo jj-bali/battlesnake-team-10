@@ -37,8 +37,6 @@ public static class CoordinateExtensions
     /// </summary>
     public static int ManhattanDistanceTo(this Coordinate from, Coordinate to)
     {
-        var dist =  Math.Abs(from.X - to.X) + Math.Abs(from.Y - to.Y);
-        Console.WriteLine(dist);
-        return dist;
+        return Math.Abs(from.X - to.X) + Math.Abs(from.Y - to.Y);
     }
 }
