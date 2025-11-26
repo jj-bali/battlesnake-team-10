@@ -24,11 +24,17 @@ public class AStarPathfinder
     {
         // Validate coordinates
         if (!IsValid(start, boardWidth, boardHeight) || !IsValid(goal, boardWidth, boardHeight))
+        {
+            Console.WriteLine("Invalid Coordinates");
             return null;
+        }
 
         if (!walkableGrid[start.Y, start.X] || !walkableGrid[goal.Y, goal.X])
+        {
+            Console.WriteLine("Not Walkable");
             return null;
-
+        }
+        
         // Initialize data structures
         var openSet = new PriorityQueue<PathNode, int>();
         var closedSet = new HashSet<Coordinate>();
@@ -78,7 +84,7 @@ public class AStarPathfinder
                 }
 
                 // Update if this path is better
-                if (tentativeGCost < neighborNode.GCost || neighborNode.GCost == 0)
+                if (tentativeGCost < neighborNode.GCost)
                 {
                     neighborNode.GCost = tentativeGCost;
                     neighborNode.Parent = currentNode;
@@ -93,6 +99,7 @@ public class AStarPathfinder
         }
 
         // No path found
+        Console.WriteLine("No path found");
         return null;
     }
 

@@ -55,7 +55,8 @@ app.MapPost("/move", (GameStatusRequest request, GridBuilder gridBuilder, AStarP
     var nearestFood = request.Board.Food
         .OrderBy(f => request.You.Head.ManhattanDistanceTo(f))
         .FirstOrDefault();
-
+    Console.WriteLine($"The nearestFood x pos: {nearestFood.X}, nearestFood y pos is: {nearestFood.Y}");
+    
     if (nearestFood != null)
     {
         var path = pathfinder.FindPath(
@@ -73,6 +74,7 @@ app.MapPost("/move", (GameStatusRequest request, GridBuilder gridBuilder, AStarP
         else
         {
             // No path to food, try to find any safe move
+            Console.WriteLine("No safe paths to food");
             var safeMove = FindAnySafeMove(request.You.Head, grid, request.Board);
             if (safeMove != null)
                 move = safeMove;
