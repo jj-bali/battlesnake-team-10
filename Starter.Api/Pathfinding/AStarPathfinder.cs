@@ -135,6 +135,7 @@ public class AStarPathfinder
             }
 
             // Avoid positions adjacent to larger or equal snakes' heads
+            // Equal size = both die, so avoid. Only be aggressive against smaller snakes.
             if (snake.Length >= you.Length)
             {
                 var head = snake.Head;

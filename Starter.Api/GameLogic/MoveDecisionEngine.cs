@@ -15,10 +15,16 @@ public class MoveDecisionEngine
             return allMoves[Random.Shared.Next(allMoves.Count)];
         }
 
-        // Step 2: Critical health check - prioritize food when health < 50
+        // Step 2: Filter out moves that lead to dead ends (trap avoidance)
+        var spaciousMoves = FilterMovesWithMinimumSpace(board, you, allSnakes, safeMoves);
+
+        // If all moves lead to traps, we have to pick the least bad option
+        var movesToConsider = spaciousMoves.Count > 0 ? spaciousMoves : safeMoves;
+
+        // Step 3: Critical health check - prioritize food when health < 5
         if (FoodTargeting.ShouldSeekFood(you))
         {
-            var foodMove = FoodTargeting.GetMoveTowardsFood(board, you, allSnakes, safeMoves);
+            var foodMove = FoodTargeting.GetMoveTowardsFood(board, you, allSnakes, movesToConsider);
             if (foodMove != null)
             {
                 Console.WriteLine($"Health critical ({you.Health}), seeking food: {foodMove}");
@@ -26,10 +32,10 @@ public class MoveDecisionEngine
             }
         }
 
-        // Step 3: If healthy, consider targeting smaller opponents
+        // Step 4: If healthy, consider targeting smaller opponents
         if (OpponentTargeting.ShouldTargetOpponents(you, allSnakes))
         {
-            var opponentMove = OpponentTargeting.GetMoveTowardsOpponent(board, you, allSnakes, safeMoves);
+            var opponentMove = OpponentTargeting.GetMoveTowardsOpponent(board, you, allSnakes, movesToConsider);
             if (opponentMove != null)
             {
                 Console.WriteLine($"Targeting smaller opponent: {opponentMove}");
@@ -37,18 +43,45 @@ public class MoveDecisionEngine
             }
         }
 
-        // Step 4: Default - seek food to maintain health
-        var defaultFoodMove = FoodTargeting.GetMoveTowardsFood(board, you, allSnakes, safeMoves);
+        // Step 5: Default - seek food to maintain health
+        var defaultFoodMove = FoodTargeting.GetMoveTowardsFood(board, you, allSnakes, movesToConsider);
         if (defaultFoodMove != null)
         {
             Console.WriteLine($"Seeking food to maintain health: {defaultFoodMove}");
             return defaultFoodMove;
         }
 
-        // Step 5: If no targets, prefer moves that maximize space (flood fill heuristic)
-        var bestMove = GetMoveWithMostSpace(board, you, allSnakes, safeMoves);
+        // Step 6: If no targets, prefer moves that maximize space (flood fill heuristic)
+        var bestMove = GetMoveWithMostSpace(board, you, allSnakes, movesToConsider);
         Console.WriteLine($"No targets found, maximizing space: {bestMove}");
         return bestMove;
+    }
+
+    private static List<string> FilterMovesWithMinimumSpace(
+        Board board,
+        Snake you,
+        IEnumerable<Snake> allSnakes,
+        List<string> safeMoves)
+    {
+        // Calculate minimum space needed to avoid being trapped
+        // We need at least as much space as our body length to safely navigate
+        int minRequiredSpace = you.Length;
+
+        var spaciousMoves = new List<string>();
+
+        foreach (var move in safeMoves)
+        {
+            var nextPos = MoveValidator.GetNextPosition(you.Head, move);
+            var availableSpace = CalculateAvailableSpace(nextPos, board, you, allSnakes);
+
+            // Only consider moves that give us enough room to maneuver
+            if (availableSpace >= minRequiredSpace)
+            {
+                spaciousMoves.Add(move);
+            }
+        }
+
+        return spaciousMoves;
     }
 
     private static string GetMoveWithMostSpace(
@@ -81,16 +114,17 @@ public class MoveDecisionEngine
         Snake you,
         IEnumerable<Snake> allSnakes)
     {
-        // Simple flood fill to count accessible spaces
+        // Flood fill to count accessible spaces from this position
         var visited = new HashSet<string>();
         var queue = new Queue<Coordinate>();
         queue.Enqueue(position);
         visited.Add($"{position.X},{position.Y}");
 
         int count = 0;
-        int maxDepth = 10; // Limit search depth for performance
+        // Limit based on board size to avoid infinite loops, but allow thorough search
+        int maxCells = board.Width * board.Height;
 
-        while (queue.Count > 0 && count < maxDepth)
+        while (queue.Count > 0 && count < maxCells)
         {
             var current = queue.Dequeue();
             count++;

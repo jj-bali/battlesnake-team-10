@@ -102,12 +102,13 @@ public class MoveValidator
             }
 
             // Avoid head-to-head collision with larger or equal snakes
+            // Equal size = both die, so avoid. Only be aggressive against smaller snakes.
             var head = snake.Head;
             var distance = Math.Abs(head.X - position.X) + Math.Abs(head.Y - position.Y);
 
             if (distance == 1 && snake.Length >= you.Length)
             {
-                return true; // Too risky to move adjacent to a larger/equal snake's head
+                return true; // Avoid larger or equal snakes (both die if equal)
             }
         }
         return false;
