@@ -9,9 +9,32 @@ public class MoveDecisionEngine
 
         if (safeMoves.Count == 0)
         {
-            // No safe moves - pick any move as last resort
-            Console.WriteLine("WARNING: No safe moves available! Choosing random move.");
+            // No safe moves - prioritize staying in bounds over collision
+            Console.WriteLine("WARNING: No safe moves available! Choosing least dangerous move.");
+
+            // First, try to find any move that at least keeps us in bounds
             var allMoves = new List<string> { "up", "down", "left", "right" };
+            var inBoundsMoves = new List<string>();
+
+            foreach (var move in allMoves)
+            {
+                var nextPos = MoveValidator.GetNextPosition(you.Head, move);
+                if (nextPos.X >= 0 && nextPos.X < board.Width &&
+                    nextPos.Y >= 0 && nextPos.Y < board.Height)
+                {
+                    inBoundsMoves.Add(move);
+                }
+            }
+
+            // Prefer in-bounds moves even if they result in collision
+            if (inBoundsMoves.Count > 0)
+            {
+                Console.WriteLine($"Choosing in-bounds move to avoid going out of bounds");
+                return inBoundsMoves[Random.Shared.Next(inBoundsMoves.Count)];
+            }
+
+            // This should never happen unless we're already at a corner, but failsafe
+            Console.WriteLine("All moves go out of bounds - choosing random move");
             return allMoves[Random.Shared.Next(allMoves.Count)];
         }
 
