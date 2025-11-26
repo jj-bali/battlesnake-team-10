@@ -1,0 +1,25 @@
+# Ignore build outputs
+**/bin/
+**/obj/
+**/out/
+
+# Ignore IDE folders
+.idea/
+.vs/
+.vscode/
+
+# Ignore git
+.git/
+.gitignore
+.gitattributes
+
+# Ignore documentation
+*.md
+README*
+
+# Ignore local config
+**/*.user
+**/.DS_Store
+
+# Ignore test files
+**/TestResults/
