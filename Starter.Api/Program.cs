@@ -22,9 +22,9 @@ app.MapGet("/", () =>
     {
         ApiVersion = "1",
         Author = "",
-        Color = "#FFFFFF",
-        Head = "default",
-        Tail = "default"
+        Color = "#00FF00",
+        Head = "nr-rocket",
+        Tail = "nr-booster"
     };
 });
 
