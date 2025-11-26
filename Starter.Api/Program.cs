@@ -1,3 +1,4 @@
+using Starter.Api.Logic;
 using Starter.Api.Requests;
 using Starter.Api.Responses;
 
@@ -14,8 +15,8 @@ app.MapGet("/", () =>
     return new InitResponse
     {
         ApiVersion = "1",
-        Author = "",
-        Color = "#FFFFFF",
+        Author = "Team 10 - A* Pathfinder",
+        Color = "#00FF00",
         Head = "default",
         Tail = "default"
     };
@@ -38,12 +39,18 @@ app.MapPost("/start", (GameStatusRequest gameStatusRequest) =>
 /// </summary>
 app.MapPost("/move", (GameStatusRequest gameStatusRequest) =>
 {
-    var direction = new List<string> { "down", "left", "right", "up" };
+    // Extract game state
+    var board = gameStatusRequest.Board;
+    var you = gameStatusRequest.You;
+
+    // Use strategy to choose the best move
+    var move = Strategy.ChooseBestMove(you, board);
+    var shout = Strategy.GenerateShout(you, board, move);
 
     return new MoveResponse
     {
-        Move = direction[Random.Shared.Next(direction.Count)],
-        Shout = "I am moving!"
+        Move = move,
+        Shout = shout
     };
 });
 
