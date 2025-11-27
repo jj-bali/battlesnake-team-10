@@ -9,9 +9,29 @@ public class MoveDecisionEngine
 
         if (safeMoves.Count == 0)
         {
-            // No safe moves - pick any move as last resort
-            Console.WriteLine("WARNING: No safe moves available! Choosing random move.");
+            // No safe moves - pick least bad option (at least respect boundaries!)
+            Console.WriteLine("WARNING: No safe moves available! Choosing least bad move.");
             var allMoves = new List<string> { "up", "down", "left", "right" };
+
+            // Filter to at least stay in bounds
+            var inBoundsMoves = new List<string>();
+            foreach (var move in allMoves)
+            {
+                var nextPos = MoveValidator.GetNextPosition(you.Head, move);
+                if (nextPos.X >= 0 && nextPos.X < board.Width &&
+                    nextPos.Y >= 0 && nextPos.Y < board.Height)
+                {
+                    inBoundsMoves.Add(move);
+                }
+            }
+
+            // If we can stay in bounds, do that at minimum
+            if (inBoundsMoves.Count > 0)
+            {
+                return inBoundsMoves[Random.Shared.Next(inBoundsMoves.Count)];
+            }
+
+            // Truly no options - pick any (we're dead anyway)
             return allMoves[Random.Shared.Next(allMoves.Count)];
         }
 
