@@ -48,7 +48,21 @@ public class OpponentTargeting
             return null;
         }
 
-        // Use A* to find path to opponent's head
+        // For 1v1 aggressive pursuit, use multi-turn prediction to cut off escape routes
+        var opponents = allSnakes.Where(s => s.Id != you.Id).ToList();
+        if (opponents.Count == 1)
+        {
+            Console.WriteLine("Using multi-turn prediction for opponent targeting");
+            var predictiveMove = MultiTurnPredictor.GetMoveWithBestFuturePosition(
+                board, you, allSnakes, safeMoves, isEndgame: false);
+
+            if (predictiveMove != null)
+            {
+                return predictiveMove;
+            }
+        }
+
+        // Fallback to A* pathfinding for direct pursuit
         var path = AStarPathfinder.FindPath(you.Head, targetSnake.Head, board, you, allSnakes);
 
         if (path == null || path.Count < 2)

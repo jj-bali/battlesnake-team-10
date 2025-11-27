@@ -38,6 +38,7 @@ public class EndgameStrategy
 
     /// <summary>
     /// Gets the best move for endgame: minimize opponent space while keeping yourself alive.
+    /// Uses multi-turn prediction to cut off escape routes.
     /// </summary>
     public static string? GetEndgameMove(
         Board board,
@@ -56,10 +57,20 @@ public class EndgameStrategy
             return null;
         }
 
+        // Use multi-turn prediction for strategic cutting of escape routes
+        var predictiveMove = MultiTurnPredictor.GetMoveWithBestFuturePosition(
+            board, you, allSnakes, safeMoves, isEndgame: true);
+
+        if (predictiveMove != null)
+        {
+            return predictiveMove;
+        }
+
+        // Fallback to immediate evaluation if prediction fails
         string bestMove = safeMoves[0];
         int bestScore = int.MinValue;
 
-        Console.WriteLine("Evaluating endgame moves:");
+        Console.WriteLine("Evaluating endgame moves (fallback):");
 
         foreach (var move in safeMoves)
         {
