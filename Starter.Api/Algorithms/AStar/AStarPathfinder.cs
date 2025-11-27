@@ -25,13 +25,11 @@ public class AStarPathfinder
         // Validate coordinates
         if (!IsValid(start, boardWidth, boardHeight) || !IsValid(goal, boardWidth, boardHeight))
         {
-            Console.WriteLine("Invalid Coordinates");
             return null;
         }
 
         if (!walkableGrid[start.Y, start.X] || !walkableGrid[goal.Y, goal.X])
         {
-            Console.WriteLine("Not Walkable");
             return null;
         }
         
@@ -99,7 +97,6 @@ public class AStarPathfinder
         }
 
         // No path found
-        Console.WriteLine("No path found");
         return null;
     }
 

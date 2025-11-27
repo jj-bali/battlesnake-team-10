@@ -9,13 +9,50 @@ public class MoveDecisionEngine
 
         if (safeMoves.Count == 0)
         {
-            // No safe moves - prioritize staying in bounds over collision
+            // No safe moves - find the least dangerous move
             Console.WriteLine("WARNING: No safe moves available! Choosing least dangerous move.");
 
-            // First, try to find any move that at least keeps us in bounds
             var allMoves = new List<string> { "up", "down", "left", "right" };
-            var inBoundsMoves = new List<string>();
 
+            // Priority 1: Moves that are in bounds and don't hit our own body
+            var nonSelfCollisionMoves = new List<string>();
+
+            foreach (var move in allMoves)
+            {
+                var nextPos = MoveValidator.GetNextPosition(you.Head, move);
+
+                // Check if in bounds
+                if (nextPos.X < 0 || nextPos.X >= board.Width ||
+                    nextPos.Y < 0 || nextPos.Y >= board.Height)
+                {
+                    continue; // Skip out of bounds moves
+                }
+
+                // Check if it would hit our own body
+                bool hitsOwnBody = false;
+                foreach (var segment in you.Body)
+                {
+                    if (segment.X == nextPos.X && segment.Y == nextPos.Y)
+                    {
+                        hitsOwnBody = true;
+                        break;
+                    }
+                }
+
+                if (!hitsOwnBody)
+                {
+                    nonSelfCollisionMoves.Add(move);
+                }
+            }
+
+            if (nonSelfCollisionMoves.Count > 0)
+            {
+                Console.WriteLine($"Choosing move that avoids self-collision: {nonSelfCollisionMoves[0]}");
+                return nonSelfCollisionMoves[Random.Shared.Next(nonSelfCollisionMoves.Count)];
+            }
+
+            // Priority 2: Just stay in bounds (desperate situation)
+            var inBoundsMoves = new List<string>();
             foreach (var move in allMoves)
             {
                 var nextPos = MoveValidator.GetNextPosition(you.Head, move);
@@ -26,15 +63,14 @@ public class MoveDecisionEngine
                 }
             }
 
-            // Prefer in-bounds moves even if they result in collision
             if (inBoundsMoves.Count > 0)
             {
-                Console.WriteLine($"Choosing in-bounds move to avoid going out of bounds");
+                Console.WriteLine("No moves avoid collision, choosing in-bounds move");
                 return inBoundsMoves[Random.Shared.Next(inBoundsMoves.Count)];
             }
 
-            // This should never happen unless we're already at a corner, but failsafe
-            Console.WriteLine("All moves go out of bounds - choosing random move");
+            // This should never happen, but failsafe
+            Console.WriteLine("All moves go out of bounds - choosing random move as last resort");
             return allMoves[Random.Shared.Next(allMoves.Count)];
         }
 
