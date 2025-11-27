@@ -16,7 +16,7 @@ app.MapGet("/", () =>
     {
         ApiVersion = "1",
         Author = "Team 10",
-        Color = "#8B00FF",
+        Color = "#000000",
         Head = "nr-rocket",
         Tail = "nr-booster"
     };

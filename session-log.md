@@ -349,4 +349,20 @@ final = clamp(optimal, min_size, max_size)
 
 ---
 
+## Request 12: Change Snake Color to Black
+**User Request:** Change snake color to black - renaming to "Mamba"
+
+**Actions Taken:**
+- Updated `Program.cs:19` - Changed color from `#8B00FF` (purple) to `#000000` (black)
+
+**Snake Appearance:**
+- Color: Black (#000000) 🖤
+- Head: nr-rocket 🚀
+- Tail: nr-booster 💨
+- Name: Mamba (to be set in game config)
+
+**Result:** ✅ Build successful - Mamba is now sleek and black!
+
+---
+
 ## End of Session Log
